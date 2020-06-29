@@ -20,12 +20,12 @@ const baseQuery = `
     LOAD_TS "loadTs",
     CR_INSTRUMENT "crInstrument",
     DB_INSTRUMENT "dbInstrument"
-  from LOG_HERMES_LDR_DATA
+  from HERMES_TRANSACTIONS_VW
 `;
 
 const countQuery = `
   select COUNT(*) "count"
-  from LOG_HERMES_LDR_DATA
+  from HERMES_TRANSACTIONS_VW
 `;
 
 exports.fetchTrades = async (context) => {
@@ -105,13 +105,13 @@ exports.getTotalData = async () => {
 
 exports.pnlChartData = async (context) => {
   try {
-    const yearData = await database.execute('select * from HERMES_SRC_YEAR_PNL_VW where source_cd = :source', { source: context.source });
+    const yearData = await database.execute('select * from HERMES_SRC_YEAR_PNL_VW where source_cd = :source order by idx desc', { source: context.source });
     const year = yearData.rows.length ? yearData.rows[0].PNL_R_TOTAL : 0;
-    const monthData = await database.execute('select * from HERMES_SRC_MONTH_FULL_PNL_VW where source_cd = :source', { source: context.source });
+    const monthData = await database.execute('select * from HERMES_SRC_MONTH_FULL_PNL_VW where source_cd = :source order by pnl_date desc', { source: context.source });
     const month = monthData.rows.length ? monthData.rows[0].PNL_R_TOTAL : 0;
-    const weekData = await database.execute('select * from HERMES_SRC_WEEK_FULL_PNL_VW where source_cd = :source', { source: context.source });
+    const weekData = await database.execute('select * from HERMES_SRC_WEEK_FULL_PNL_VW where source_cd = :source order by pnl_date desc', { source: context.source });
     const week = weekData.rows.length ? weekData.rows[0].PNL_R_TOTAL : 0;
-    const dayData = await database.execute('select * from HERMES_SRC_24H_FULL_PNL_VW where source_cd = :source', { source: context.source });
+    const dayData = await database.execute('select * from HERMES_SRC_24H_FULL_PNL_VW where source_cd = :source order by pnl_date desc', { source: context.source });
     const day = dayData.rows.length ? dayData.rows[0].PNL_R_TOTAL : 0;
     return {
       year, month, week, day
