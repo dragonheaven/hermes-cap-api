@@ -99,7 +99,7 @@ const find = async (context) => {
     const result = await database.execute(query, binds);
     return result.rows;
   } catch (err) {
-    console.error(err);
+    console.error('User::find', err);
   }
 };
 
@@ -130,7 +130,7 @@ const findOne = async (context) => {
     const result = await database.execute(query, binds);
     return result.rows[0];
   } catch (err) {
-    console.error(err);
+    console.error('User::findOne', err);
   }
 };
 
@@ -147,7 +147,7 @@ const create = async (data) => {
     await database.execute(createQuery, user);
     return user;
   } catch (err) {
-    console.error(err);
+    console.error('User::create', err);
   }
 };
 
@@ -157,13 +157,13 @@ const update = async (data) => {
   const user = await findOne({ id: data.id });
 
   try {
-    const binds = Object.assign({ ...user, ...initUser(data) });
+    const binds = Object.assign({ ...user, ...data });
     const result = await database.execute(updateQuery, binds);
 
     if (result.rowsAffected && result.rowsAffected === 1) return user;
     return null;
   } catch (err) {
-    console.error('user.update--', err);
+    console.error('User::update', err);
   }
 };
 
@@ -189,7 +189,7 @@ const del = async (context) => {
     const result = await database.execute(delQuery, binds);
     return result.outBinds.rowcount === 1;
   } catch (err) {
-    console.error(err);
+    console.error('User::del', err);
   }
 };
 

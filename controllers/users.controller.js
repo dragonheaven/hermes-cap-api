@@ -119,7 +119,7 @@ exports.postLogin = async (req, res, next) => {
         return returnToken(user, res);
       });
     })(req, res, next);
-  } catch (error) {
+  } catch (err) {
     return serverError(res);
   }
 };
@@ -152,8 +152,8 @@ exports.requestForgotPassword = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: 'We have just sent instructions to your email' });
-  } catch (error) {
-    return next(error);
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -196,8 +196,8 @@ exports.resetPassword = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: 'Your password has been changed' });
-  } catch (error) {
-    return next(error);
+  } catch (err) {
+    return next(err);
   }
 };
 
@@ -205,14 +205,14 @@ exports.resetPassword = async (req, res, next) => {
  * GET /logout
  * Log out.
  */
-exports.logout = async (req, res) => {
+exports.logout = async (req, res, next) => {
   try {
     await req.logout();
     await req.session.destroy();
     req.user = null;
     return res.status(200).json({ message: 'Logout successfully.' });
   } catch (error) {
-    console.log('Error: Failed to destroy the session during logout.', error);
+    next(error);
   }
 };
 
@@ -225,7 +225,6 @@ exports.getProfile = async (req, res) => {
     const users = await User.find({ id: req.user.id });
     return returnToken(users[0], res);
   } catch (error) {
-    console.log('getProfile - user.find: ', error);
     return serverError(res);
   }
 };
@@ -243,7 +242,6 @@ exports.updateProfile = async (req, res) => {
     const result = await User.update(req.body);
     return returnToken(result, res);
   } catch (error) {
-    console.log('getProfile - user.find: ', error);
     return serverError(res);
   }
 };
@@ -315,7 +313,6 @@ exports.getTotalData = async (req, res) => {
       totalData
     });
   } catch (err) {
-    console.error(err);
     return serverError(res);
   }
 };

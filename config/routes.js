@@ -34,7 +34,6 @@ exports.initRoutes = (app) => {
 
 
   app.post('/admin/trade/fetch/history', verifyAuth, tradesController.getFetchTrades);
-  app.post('/admin/trade/fetch/special', verifyAuth, tradesController.fetchSpecialTrades);
   app.post('/admin/trade/fetch/pnlSum', verifyAuth, tradesController.fetchPnlSum);
 
   app.post('/admin/positions/fetch/history', verifyAuth, positionsController.getFetchPositions);

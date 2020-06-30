@@ -1,23 +1,18 @@
 const database = require('../services/database');
 
 const baseQuery = `
-  select SOURCE_CD "source",
-    BALANCE_ID "balanceId",
-    BALANCE_DT "balanceDt",
-    CLD_REC_ID "cldRecId",
+  select STRATEGY "strategy",
+    BALANCE_DATE "balanceDate",
     INSTRUMENT "instrument",
-    EXCHANGE "exchange",
-    BALANCE "balance",
     USD_RATE "usdRate",
-    BTC_RATE "btcRate",
-    TRANSACTION_FLAG "transactionFlag",
-    LOAD_TS "loadTs"
-  from HERMES_STG_BALANCE
+    HOLDINGS "holdings",
+    USD_EQV "usdEQV"
+  from HERMES_24H_SRC_EOH_BALANCE_VW
 `;
 
 const countQuery = `
   select COUNT(*) "count"
-  from HERMES_STG_BALANCE
+  from HERMES_24H_SRC_EOH_BALANCE_VW
 `;
 
 exports.fetchPositions = async (context) => {
@@ -25,7 +20,7 @@ exports.fetchPositions = async (context) => {
     let query = baseQuery;
     const binds = {};
     if (context && context.source) {
-      query = `${query} where SOURCE_CD = :source`;
+      query = `${query} where STRATEGY = :source`;
       binds.source = context.source;
     }
 
@@ -38,7 +33,7 @@ exports.fetchPositions = async (context) => {
     const result = await database.execute(query, binds);
     return result.rows;
   } catch (err) {
-    console.error(err);
+    console.error('position::fetchPositions', err);
   }
 };
 
@@ -47,14 +42,14 @@ exports.count = async (context) => {
     let query = countQuery;
     const binds = {};
     if (context && context.source) {
-      query = `${query} where SOURCE_CD = :source`;
+      query = `${query} where STRATEGY = :source`;
       binds.source = context.source;
     }
 
     const result = await database.execute(query, binds);
     return result.rows[0].count;
   } catch (err) {
-    console.error(err);
+    console.error('position::count', err);
   }
 };
 
@@ -87,7 +82,7 @@ exports.aumChartData = async (context) => {
       day, week, month, year
     };
   } catch (err) {
-    console.error(err);
+    console.error('position::aumChartData', err);
   }
 };
 
@@ -97,6 +92,6 @@ exports.getCurrentPositions = async () => {
     const result = await database.execute(query);
     return result.rows;
   } catch (err) {
-    console.error(err);
+    console.error('position::getCurrentPositions', err);
   }
 };

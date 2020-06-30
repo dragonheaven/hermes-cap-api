@@ -2,26 +2,21 @@ const moment = require('moment');
 const database = require('../services/database');
 
 const baseQuery = `
-  select LOGID "logId",
-    SOURCE_CD "sourceCd",
-    CLD_REC_ID "cldRecId",
-    LOGTS_FULL_IDX "logTsFullIdx",
-    LOGTS_FULL "logTsFull",
-    LOGTS "logTs",
-    LOGOPERATION "logOperation",
-    LOGCD "logCd",
+  select TRANSACTION_ID "transactionId",
+    TRANSACTION_DATE "transactionDate",
+    SOURCE_CD "source",
     EXCHANGE "exchange",
     FX_INSTRUMENT "fxInstrument",
-    MARKETOPERATION "marketOperation",
-    PRICE "price",
-    AMOUNT "amount",
+    DIRECTION "direction",
+    ASSET_PRICE "assetPrice",
+    ASSET_AMOUNT "assetAmount",
     COMMISSION "commission",
-    TRANSACTION_FLAG "transactionFlag",
-    LOAD_TS "loadTs",
-    CR_INSTRUMENT "crInstrument",
-    DB_INSTRUMENT "dbInstrument"
+    USD_EQU_AMOUNT "usdEquAmount",
+    USD_EQU_COMMISSION "usdEquCommission",
+    BTC_EQU_AMOUNT "btcEquAmount",
+    BTC_EQU_COMMISSION "btcEquCommission"
   from HERMES_TRANSACTIONS_VW
-`;
+  `;
 
 const countQuery = `
   select COUNT(*) "count"
@@ -29,30 +24,31 @@ const countQuery = `
 `;
 
 exports.fetchTrades = async (context) => {
+  let query = baseQuery;
+  const binds = {};
+
+  if (context && context.source) {
+    query = `${query} where SOURCE_CD = :source`;
+    binds.source = context.source;
+  }
+
+  if (context && context.time) {
+    binds.time = moment().add(-24, 'hours').toDate();
+    binds.endTime = moment().toDate();
+    if (context.source) query = `${query} AND TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
+    else query = `${query} WHERE TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
+  }
+
+  if (context && context.page !== undefined && context.rowsPerPage) {
+    query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
+    binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
+    binds.maxRows = parseInt(context.rowsPerPage, 10);
+  }
   try {
-    let query = baseQuery;
-    const binds = {};
-
-    if (context && context.source) {
-      query = `${query} where SOURCE_CD = :source`;
-      binds.source = context.source;
-    }
-
-    if (context && context.time) {
-      binds.time = moment().add(-24, 'hours').toDate();
-      if (context.source) query = `${query} AND LOGTS_FULL >= :time`;
-      else query = `${query} WHERE LOGTS_FULL >= :time`;
-    }
-
-    if (context && context.page !== undefined && context.rowsPerPage) {
-      query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
-      binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
-      binds.maxRows = parseInt(context.rowsPerPage, 10);
-    }
     const result = await database.execute(query, binds);
     return result.rows;
   } catch (err) {
-    console.error(err);
+    console.error('Trade::fetchTrades', err);
   }
 };
 
@@ -68,13 +64,15 @@ exports.count = async (context) => {
 
     if (context && context.time) {
       binds.time = moment().add(-24, 'hours').toDate();
-      if (context.source) query = `${query} AND LOGTS_FULL >= :time`;
-      else query = `${query} WHERE LOGTS_FULL >= :time`;
+      binds.endTime = moment().toDate();
+      if (context.source) query = `${query} AND TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
+      else query = `${query} WHERE TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
     }
+
     const total = await database.execute(query, binds);
     return total.rows[0].count;
   } catch (err) {
-    console.error(err);
+    console.error('Trade::count', err);
   }
 };
 
@@ -89,7 +87,7 @@ exports.fetchPnlSum = async (context) => {
     }
     return sum;
   } catch (err) {
-    console.error(err);
+    console.error('Trade::fetchPnlSum', err);
   }
 };
 
@@ -99,7 +97,7 @@ exports.getTotalData = async () => {
     const result = await database.execute(query);
     return result.rows[0];
   } catch (err) {
-    console.error(err);
+    console.error('Trade::getTotalData', err);
   }
 };
 
@@ -117,7 +115,7 @@ exports.pnlChartData = async (context) => {
       year, month, week, day
     };
   } catch (err) {
-    console.error(err);
+    console.error('Trade::pnlChartData', err);
   }
 };
 
@@ -126,6 +124,6 @@ exports.getTotalBySource = async (context) => {
     const result = await database.execute('select AUM "aum", PNL "pnl" from TOTAL_SCREEN_BY_SOURCE_VW where source_cd = :source', { source: context.source });
     return result.rows[0] ? result.rows[0] : { aum: 0, pnl: 0 };
   } catch (err) {
-    console.error(err);
+    console.error('Trade::getTotalBySource', err);
   }
 };

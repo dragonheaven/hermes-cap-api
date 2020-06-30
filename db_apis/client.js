@@ -105,11 +105,25 @@ const find = async (context) => {
     binds.clientId = context.id;
     query += '\nwhere CLIENT_ID = :clientId';
   }
+
+  if (context && context.fromDate && context.toDate) {
+    binds.fromDate = new Date(context.fromDate);
+    binds.toDate = new Date(context.toDate);
+    if (context.id) query = `${query} AND CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
+    else query = `${query} WHERE CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
+  }
+
+  if (context && context.page !== undefined && context.rowsPerPage) {
+    query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
+    binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
+    binds.maxRows = parseInt(context.rowsPerPage, 10);
+  }
+
   try {
     const result = await database.execute(query, binds);
     return result.rows;
   } catch (err) {
-    console.error(err);
+    console.error('Client::find', err);
   }
 };
 
@@ -134,7 +148,7 @@ const findOne = async (context) => {
     const result = await database.execute(query, binds);
     return result.rows[0];
   } catch (err) {
-    console.error(err);
+    console.error('Client::findOne', err);
   }
 };
 
@@ -145,7 +159,7 @@ const create = async (data) => {
   try {
     await database.execute(createQuery, client);
   } catch (err) {
-    console.error(err);
+    console.error('Client::create', err);
   }
 };
 
@@ -158,7 +172,7 @@ const update = async (data) => {
     if (result.rowsAffected && result.rowsAffected === 1) return client;
     return null;
   } catch (err) {
-    console.error(err);
+    console.error('Client::update', err);
   }
 };
 
@@ -175,7 +189,15 @@ const del = async (context) => {
     const result = await database.execute(deleteQuery, binds);
     return result.outBinds.rowcount === 1;
   } catch (err) {
-    console.error(err);
+    console.error('Client::del', err);
+  }
+};
+
+const deleteAll = async () => {
+  try {
+    await database.execute('delete from HERMES_ACC_CLIENT');
+  } catch (err) {
+    console.error('Client::deleteAll', err);
   }
 };
 
@@ -184,10 +206,10 @@ const count = async () => {
     const result = await database.execute(countQuery);
     return result.rows[0].count;
   } catch (err) {
-    console.error(err);
+    console.error('Client::count', err);
   }
 };
 
 module.exports = {
-  count, find, findOne, create, update, del
+  count, find, findOne, create, update, del, deleteAll
 };

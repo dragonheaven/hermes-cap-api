@@ -47,7 +47,7 @@ const create = async (data) => {
     await database.execute(createQuery, token);
     return token;
   } catch (err) {
-    console.error(err);
+    console.error('Token::create', err);
   }
 };
 
@@ -64,7 +64,7 @@ const findOne = async (context) => {
     const result = await database.execute(query, binds);
     return result.rows[0];
   } catch (err) {
-    console.error(err);
+    console.error('Token::findOne', err);
   }
 };
 
@@ -82,7 +82,7 @@ const del = async (context) => {
     const result = await database.execute(delQuery, binds);
     return result.outBinds.rowcount === 1;
   } catch (err) {
-    console.error(err);
+    console.error('Token::del', err);
   }
 };
 

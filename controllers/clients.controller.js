@@ -1,12 +1,11 @@
 const Client = require('../db_apis/client');
 const { serverError } = require('../helper/serverError');
-const countries = require('../data/countries');
 
 exports.getFetchClients = async (req, res) => {
   try {
-    const clients = await Client.find();
+    const clients = await Client.find(req.query);
     res.status(200).json({
-      total: clients.length,
+      total: await Client.count(req.query),
       clients
     });
   } catch (err) {
@@ -21,7 +20,7 @@ exports.getFetchSpecialClient = async (req, res) => {
     return res.status(200).json({
       currentClient: client
     });
-  } catch (error) {
+  } catch (err) {
     return serverError(res);
   }
 };

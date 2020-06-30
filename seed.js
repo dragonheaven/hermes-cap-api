@@ -13,11 +13,12 @@ dotenv.load({ path: '.env' });
 const app = express();
 
 const { initDB } = require('./config/database');
-const { initConfig } = require('./config/app');
 const userSeed = require('./services/userSeed');
+const clientSeed = require('./services/clientSeed');
 
 initDB().then(() => {
-  userSeed();
+  clientSeed();
+  // userSeed();
 });
 
 module.exports = app;
