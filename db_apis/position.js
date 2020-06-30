@@ -19,16 +19,16 @@ exports.fetchPositions = async (context) => {
   try {
     let query = baseQuery;
     const binds = {};
-    if (context && context.source) {
-      query = `${query} where STRATEGY = :source`;
-      binds.source = context.source;
-    }
-
-    if (context && context.page !== undefined && context.rowsPerPage) {
-      query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
-      binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
-      binds.maxRows = parseInt(context.rowsPerPage, 10);
-    }
+    // if (context && context.source) {
+    //   query = `${query} where STRATEGY = :source`;
+    //   binds.source = context.source;
+    // }
+    //
+    // if (context && context.page !== undefined && context.rowsPerPage) {
+    //   query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
+    //   binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
+    //   binds.maxRows = parseInt(context.rowsPerPage, 10);
+    // }
 
     const result = await database.execute(query, binds);
     return result.rows;
