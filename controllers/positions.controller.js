@@ -6,7 +6,7 @@ exports.getFetchPositions = async (req, res) => {
     const positions = await Position.fetchPositions(req.body);
 
     res.status(200).json({
-      total: await Position.count(req.body),
+      total: positions.length,
       valid: positions.length,
       positions
     });

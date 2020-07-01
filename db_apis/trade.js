@@ -1,4 +1,3 @@
-const moment = require('moment');
 const database = require('../services/database');
 
 const baseQuery = `
@@ -27,23 +26,11 @@ exports.fetchTrades = async (context) => {
   let query = baseQuery;
   const binds = {};
 
-  // if (context && context.source) {
-  //   query = `${query} where SOURCE_CD = :source`;
-  //   binds.source = context.source;
-  // }
-  //
-  // if (context && context.time) {
-  //   binds.time = moment().add(-24, 'hours').toDate();
-  //   binds.endTime = moment().toDate();
-  //   if (context.source) query = `${query} AND TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
-  //   else query = `${query} WHERE TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
-  // }
-  //
-  // if (context && context.page !== undefined && context.rowsPerPage) {
-  //   query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
-  //   binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
-  //   binds.maxRows = parseInt(context.rowsPerPage, 10);
-  // }
+  if (context && context.source) {
+    query = `${query} where SOURCE_CD = :source`;
+    binds.source = context.source;
+  }
+
   try {
     const result = await database.execute(query, binds);
     return result.rows;
@@ -60,13 +47,6 @@ exports.count = async (context) => {
     if (context && context.source) {
       query = `${query} where SOURCE_CD = :source`;
       binds.source = context.source;
-    }
-
-    if (context && context.time) {
-      binds.time = moment().add(-24, 'hours').toDate();
-      binds.endTime = moment().toDate();
-      if (context.source) query = `${query} AND TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
-      else query = `${query} WHERE TRANSACTION_DATE >= :time AND TRANSACTION_DATE < :endTime`;
     }
 
     const total = await database.execute(query, binds);

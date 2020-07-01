@@ -32,35 +32,6 @@ exports.addContact = async (data) => {
     });
 };
 
-exports.subscribeNewsletter = async (data) => {
-  if (env === 'development') return;
-
-  const options = {
-    uri: `${sendgridApiUrl}/marketing/contacts`,
-    method: 'put',
-    headers: {
-      Authorization: `Bearer ${sendgridApiKey}`
-    },
-    body: {
-      list_ids: [data.listId],
-      contacts: [
-        {
-          email: data.email
-        }
-      ]
-    },
-    json: true // Automatically parses the JSON string in the response
-  };
-
-  rp(options)
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
-
 exports.sendConfirmationEmail = data => new Promise((resolve, reject) => {
   if (env === 'development') resolve({ status: true });
 
@@ -82,16 +53,16 @@ exports.sendConfirmationEmail = data => new Promise((resolve, reject) => {
             first_name: data.firstName,
             last_name: data.lastName,
             confirm_url: data.confirmUrl,
-            Sender_Name: 'Hermes Team',
-            Sender_Address: '45 Boulevard Victor hugo clichy',
-            Sender_Zip: '92110 FRA'
+            Sender_Name: 'ArbTitan',
+            Sender_Address: '37 LONDON DR EAST BRUNSWICK',
+            Sender_Zip: '08816'
           }
         }
       ],
       from: {
-        email: data.from
+        email: 'Support@ArbTitan.com'
       },
-      template_id: 'd-73abab273658462aac30a9ee6817e422'
+      template_id: 'd-8b5059cfd93a4e8d9287154e1081ab30'
     },
     json: true // Automatically parses the JSON string in the response
   };
@@ -128,16 +99,16 @@ exports.sendPasswordResetEmail = data => new Promise((resolve, reject) => {
             first_name: data.firstName,
             last_name: data.lastName,
             confirm_url: data.confirmUrl,
-            Sender_Name: 'Hermes Team',
-            Sender_Address: '45 Boulevard Victor hugo clichy',
-            Sender_Zip: '92110 FRA'
+            Sender_Name: 'ArbTitan',
+            Sender_Address: '37 LONDON DR EAST BRUNSWICK',
+            Sender_Zip: '08816'
           }
         }
       ],
       from: {
-        email: data.from
+        email: 'Support@ArbTitan.com'
       },
-      template_id: 'd-865f4241ea234d36a3f7184ea8aa64c6'
+      template_id: 'd-55814a05ea9b4a9c825f056c0f52b31a'
     },
     json: true // Automatically parses the JSON string in the response
   };
