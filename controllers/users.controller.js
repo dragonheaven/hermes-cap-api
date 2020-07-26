@@ -13,6 +13,8 @@ const Position = require('../db_apis/position');
 const { serverError } = require('../helper/serverError');
 const { sendPasswordResetEmail, sendConfirmationEmail } = require('../helper/sendgrid');
 
+const validateEmail = email => /^(([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+)?$/.test(email);
+
 const returnToken = async (user, res) => {
   const token = jwt.sign({ userId: user.id, role: user.role }, 'Hermes Admin Login', { expiresIn: 60 * 60 });
   const refreshToken = jwt.sign({ userId: user._id }, 'Hermes Admin Login Refresh Token', { expiresIn: (60 + 5) * 60 });
@@ -42,6 +44,9 @@ exports.getUsers = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
+    if (!req.body.email || !req.body.firstName) return res.status(400).json({ error: { msg: 'Invalid arguments.' } });
+    if (!validateEmail(req.body.email)) return res.status(400).json({ error: { msg: 'Invalid email.' } });
+
     const user = await User.create(req.body);
     const rows = await User.find();
 
@@ -53,7 +58,7 @@ exports.create = async (req, res, next) => {
       token: crypto.randomBytes(16).toString('hex')
     });
 
-    const link = `${process.env.FRONTEND_URL}/admin/set-password/${token.token}`;
+    const link = `${process.env.FRONTEND_URL}/auth/set-password/${token.token}`;
 
     await sendConfirmationEmail({
       to: user.email,
@@ -71,6 +76,9 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
+    if (!req.body.email || !req.body.firstName) return res.status(400).json({ error: { msg: 'Invalid arguments.' } });
+    if (!validateEmail(req.body.email)) return res.status(400).json({ error: { msg: 'Invalid email.' } });
+
     await User.update(req.body);
     const rows = await User.find();
     res.status(200).json(rows);

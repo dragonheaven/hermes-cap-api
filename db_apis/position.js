@@ -7,12 +7,12 @@ const baseQuery = `
     USD_RATE "usdRate",
     HOLDINGS "holdings",
     USD_EQV "usdEQV"
-  from HERMES_24H_SRC_EOH_BALANCE_VW
+  from HERMES_WEEK_SRC_EOH_BALANCE_VW
 `;
 
 const countQuery = `
   select COUNT(*) "count"
-  from HERMES_24H_SRC_EOH_BALANCE_VW
+  from HERMES_WEEK_SRC_EOH_BALANCE_VW
 `;
 
 exports.fetchPositions = async (context) => {
@@ -47,33 +47,33 @@ exports.count = async (context) => {
   }
 };
 
+const calcChartData = (data) => {
+  const chart = {};
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    chart[item.INSTRUMENT] = chart[item.INSTRUMENT]
+      ? chart[item.INSTRUMENT] + item.USD_EQV : item.USD_EQV;
+  }
+  return chart;
+};
+
 exports.aumChartData = async (context) => {
   try {
     const dayData = await database.execute('select * from HERMES_24H_SRC_EOH_BALANCE_VW where strategy = :source', { source: context.source });
-    let day = 0;
-    for (let i = 0; i < dayData.rows.length; i++) {
-      day += dayData.rows[i].USD_EQV;
-    }
+    // const dayChart = calcChartData(dayData.rows);
 
     const weekData = await database.execute('select * from HERMES_WEEK_SRC_EOH_BALANCE_VW where strategy = :source', { source: context.source });
-    let week = 0;
-    for (let i = 0; i < weekData.rows.length; i++) {
-      week += weekData.rows[i].USD_EQV;
-    }
+    // const weekChart = calcChartData(weekData.rows);
 
     const monthData = await database.execute('select * from HERMES_MON_SRC_EOH_BALANCE_VW where strategy = :source', { source: context.source });
-    let month = 0;
-    for (let i = 0; i < monthData.rows.length; i++) {
-      month += monthData.rows[i].USD_EQV;
-    }
+    // const monthChart = calcChartData(monthData.rows);
+    console.log(monthData);
 
     const yearData = await database.execute('select * from HERMES_YEAR_SRC_EOM_BALANCE_VW where strategy = :source', { source: context.source });
-    let year = 0;
-    for (let i = 0; i < yearData.rows.length; i++) {
-      year += yearData.rows[i].USD_EQV;
-    }
+    // const yearChart = calcChartData(yearData.rows);
+
     return {
-      day, week, month, year
+      day: dayData, week: weekData, month: monthData, year: yearData
     };
   } catch (err) {
     console.error('position::aumChartData', err);

@@ -1,6 +1,8 @@
 const Client = require('../db_apis/client');
 const { serverError } = require('../helper/serverError');
 
+const validateEmail = email => /^(([a-zA-Z0-9_.-])+@([a-zA-Z0-9_.-])+\.([a-zA-Z])+([a-zA-Z])+)?$/.test(email);
+
 exports.getFetchClients = async (req, res) => {
   try {
     const clients = await Client.find(req.query);
@@ -27,6 +29,9 @@ exports.getFetchSpecialClient = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    if (!req.body.email || !req.body.firstName) return res.status(400).json({ error: { msg: 'Invalid arguments.' } });
+    if (!validateEmail(req.body.email)) return res.status(400).json({ error: { msg: 'Invalid email.' } });
+
     const { rowsPerPage, ...data } = req.body;
     await Client.create(data);
 
@@ -42,8 +47,10 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const { rowsPerPage, country, ...data } = req.body;
+    if (!req.body.email || !req.body.firstName) return res.status(400).json({ error: { msg: 'Invalid arguments.' } });
+    if (!validateEmail(req.body.email)) return res.status(400).json({ error: { msg: 'Invalid email.' } });
 
+    const { rowsPerPage, country, ...data } = req.body;
     const client = await Client.update(data);
     if (!client) return res.status(400).json({ error: { msg: 'Invalid arguments' } });
 

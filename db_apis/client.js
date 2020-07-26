@@ -106,18 +106,18 @@ const find = async (context) => {
     query += '\nwhere CLIENT_ID = :clientId';
   }
 
-  if (context && context.fromDate && context.toDate) {
-    binds.fromDate = new Date(context.fromDate);
-    binds.toDate = new Date(context.toDate);
-    if (context.id) query = `${query} AND CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
-    else query = `${query} WHERE CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
-  }
-
-  if (context && context.page !== undefined && context.rowsPerPage) {
-    query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
-    binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
-    binds.maxRows = parseInt(context.rowsPerPage, 10);
-  }
+  // if (context && context.fromDate && context.toDate) {
+  //   binds.fromDate = new Date(context.fromDate);
+  //   binds.toDate = new Date(context.toDate);
+  //   if (context.id) query = `${query} AND CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
+  //   else query = `${query} WHERE CREATE_TS >= :fromDate AND CREATE_TS < :toDate`;
+  // }
+  //
+  // if (context && context.page !== undefined && context.rowsPerPage) {
+  //   query = `${query} OFFSET :offset ROWS FETCH NEXT :maxRows ROWS ONLY`;
+  //   binds.offset = parseInt(context.page, 10) * parseInt(context.rowsPerPage, 10);
+  //   binds.maxRows = parseInt(context.rowsPerPage, 10);
+  // }
 
   try {
     const result = await database.execute(query, binds);
@@ -154,9 +154,10 @@ const findOne = async (context) => {
 
 const create = async (data) => {
   const client = initClient(data);
-  client.id = Math.round(Math.random() * 10000);
 
   try {
+    const result = await database.execute('select CLIENT_ID "id" from HERMES_ACC_CLIENT order by CLIENT_ID desc', [], { maxRows: 1 });
+    client.id = result.rows.length ? result.rows[0].id + 1 : 1;
     await database.execute(createQuery, client);
   } catch (err) {
     console.error('Client::create', err);
