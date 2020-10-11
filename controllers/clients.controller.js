@@ -17,7 +17,7 @@ exports.getFetchClients = async (req, res) => {
 
 exports.getFetchSpecialClient = async (req, res) => {
   try {
-    const client = await Client.findOne(req.query.clientId);
+    const client = await Client.findOne({id: req.query.clientId});
 
     return res.status(200).json({
       currentClient: client
