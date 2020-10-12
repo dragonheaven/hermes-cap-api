@@ -188,8 +188,8 @@ exports.resetPassword = async (req, res, next) => {
     }
 
     const user = await User.findOne({ passwordResetToken: req.body.token });
-    // .where('passwordResetExpires').gt(Date.now()).exec();
-    if (!user || new Date(user.passwordResetExpires) < Date.now()) {
+
+    if (!user || new Date(user.passwordResetExpires) < moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')) {
       return res.status(400).json({ error: { msg: 'Password reset token is invalid or has expired' } });
     }
 
